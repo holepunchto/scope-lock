@@ -6,11 +6,19 @@ module.exports = class ScopeLock {
     this.waiting = []
     this.locked = false
     this.skip = 0
+    this.destroyed = false
   }
 
   flush () {
     if (this.locked === false && this.waiting.length === 0) return Promise.resolve()
     return this.wiggle()
+  }
+
+  destroy () {
+    this.destroyed = true
+    for (const w of this.waiting) w(false)
+    this.skip = 0
+    this.waiting = []
   }
 
   async wiggle () {
@@ -22,6 +30,11 @@ module.exports = class ScopeLock {
     const resolve = tmpResolve
 
     tmpResolve = null
+
+    if (this.destroyed) {
+      resolve(false)
+      return promise
+    }
 
     if (this.locked === true) {
       this.waiting.push(resolve)
