@@ -1,5 +1,5 @@
 const test = require('brittle')
-const ScopeLock = require('scope-lock')
+const ScopeLock = require('./')
 
 test('basic lock', function (t) {
   t.plan(5)
