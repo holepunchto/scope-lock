@@ -24,6 +24,9 @@ const d = new ScopeLock({ debounce: true }) // debounced lock
 if (await d.lock()) {
   // if we get lock do our thing
 }
+
+// wait for all current work to drain
+await d.flush()
 ```
 
 ## License
