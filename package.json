@@ -1,6 +1,6 @@
 {
   "name": "scope-lock",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Some concurrency semantics around entering scopes",
   "main": "index.js",
   "files": [
