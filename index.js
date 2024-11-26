@@ -10,7 +10,7 @@ module.exports = class ScopeLock {
   }
 
   flush () {
-    if (this.locked === false && this.waiting.length === 0) return Promise.resolve(true)
+    if (this.locked === false && this.waiting.length === 0) return Promise.resolve(this.destroyed === false)
 
     const promise = new Promise(setTmpResolve)
     const resolve = tmpResolve
