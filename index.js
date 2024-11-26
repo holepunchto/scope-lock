@@ -11,12 +11,13 @@ module.exports = class ScopeLock {
 
   flush () {
     if (this.locked === false && this.waiting.length === 0) return Promise.resolve(true)
+
     const promise = new Promise(setTmpResolve)
     const resolve = tmpResolve
 
     tmpResolve = null
+    this.waiting.push({ lock: false, resolve })
 
-    this.waiting.push(resolve)
     return promise
   }
 
@@ -31,7 +32,7 @@ module.exports = class ScopeLock {
     tmpResolve = null
 
     if (this.locked === true) {
-      this.waiting.push(resolve)
+      this.waiting.push({ lock: true, resolve })
       return promise
     }
 
@@ -49,7 +50,7 @@ module.exports = class ScopeLock {
   unlock () {
     if (this.destroyed === true) {
       for (let i = 0; i < this.waiting.length; i++) {
-        this.waiting[i](false)
+        this.waiting[i].resolve(false)
       }
       this.waiting = []
       this.skip = 0
@@ -59,11 +60,17 @@ module.exports = class ScopeLock {
 
     if (this.skip !== 0) {
       for (let i = 0; i < this.skip; i++) {
-        this.waiting[i](false)
+        const { lock, resolve } = this.waiting[i]
+        resolve(lock === false)
       }
 
       this.waiting = this.waiting.slice(this.skip)
       this.skip = 0
+    }
+
+    while (this.waiting.length > 0) {
+      if (this.waiting[0].lock === true) break
+      this.waiting.shift().resolve(true)
     }
 
     if (this.waiting.length === 0) {
@@ -71,10 +78,10 @@ module.exports = class ScopeLock {
       return
     }
 
-    const next = this.waiting.shift()
+    const { resolve } = this.waiting.shift()
     if (this.debounce === true) this.skip = this.waiting.length
 
-    next(true)
+    resolve(true)
   }
 }
 
