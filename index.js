@@ -68,8 +68,7 @@ module.exports = class ScopeLock {
       this.skip = 0
     }
 
-    while (this.waiting.length > 0) {
-      if (this.waiting[0].lock === true) break
+    while (this.waiting.length > 0 && this.waiting[0].lock === false) {
       this.waiting.shift().resolve(true)
     }
 
